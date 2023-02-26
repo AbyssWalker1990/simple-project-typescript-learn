@@ -12,7 +12,7 @@ class ProjectState {
         this.projects = [];
     }
     static getInstance() {
-        if (this.instance != null) {
+        if (this.instance) {
             return this.instance;
         }
         this.instance = new ProjectState();
@@ -34,37 +34,37 @@ class ProjectState {
         }
     }
 }
-// Creating global constant for state
 const projectState = ProjectState.getInstance();
 function validate(validatableInput) {
     let isValid = true;
-    if (validatableInput.required !== null) {
+    if (validatableInput.required) {
         isValid = isValid && validatableInput.value.toString().trim().length !== 0;
     }
-    if (validatableInput.minLength !== null &&
-        validatableInput.minLength !== undefined &&
+    if (validatableInput.minLength != null &&
         typeof validatableInput.value === 'string') {
-        isValid = isValid && validatableInput.value.length >= validatableInput.minLength;
+        isValid =
+            isValid && validatableInput.value.length >= validatableInput.minLength;
     }
-    if (validatableInput.maxLength !== null &&
-        validatableInput.maxLength !== undefined &&
+    if (validatableInput.maxLength != null &&
         typeof validatableInput.value === 'string') {
-        isValid = isValid && validatableInput.value.length <= validatableInput.maxLength;
+        isValid =
+            isValid && validatableInput.value.length <= validatableInput.maxLength;
     }
-    if (validatableInput.min != null && typeof +validatableInput.value === 'number') {
+    if (validatableInput.min != null &&
+        typeof validatableInput.value === 'number') {
         isValid = isValid && validatableInput.value >= validatableInput.min;
     }
-    if (validatableInput.max != null && typeof +validatableInput.value === 'number') {
+    if (validatableInput.max != null &&
+        typeof validatableInput.value === 'number') {
         isValid = isValid && validatableInput.value <= validatableInput.max;
     }
     return isValid;
 }
-// Autobind decorator
-function Autobind(_, _2, descriptor) {
+// autobind decorator
+function autobind(_, _2, descriptor) {
     const originalMethod = descriptor.value;
     const adjDescriptor = {
         configurable: true,
-        enumerable: false,
         get() {
             const boundFn = originalMethod.bind(this);
             return boundFn;
@@ -72,27 +72,15 @@ function Autobind(_, _2, descriptor) {
     };
     return adjDescriptor;
 }
-// Project list class
+// ProjectList Class
 class ProjectList {
     constructor(type) {
         this.type = type;
-        const templateEl = document.getElementById('project-list');
-        const hostElement = document.getElementById('app');
-        if (templateEl != null) {
-            this.templateElement = templateEl;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
-        if (hostElement != null) {
-            this.hostElement = hostElement;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
+        this.templateElement = document.getElementById('project-list');
+        this.hostElement = document.getElementById('app');
         this.assignedProjects = [];
-        const importNode = document.importNode(this.templateElement.content, true);
-        this.element = importNode.firstElementChild;
+        const importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild;
         this.element.id = `${this.type}-projects`;
         projectState.addListener((projects) => {
             this.assignedProjects = projects;
@@ -111,66 +99,25 @@ class ProjectList {
     }
     renderContent() {
         const listId = `${this.type}-projects-list`;
-        const listUlEl = this.element.querySelector('ul');
-        if (listUlEl != null) {
-            listUlEl.id = listId;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
-        const listUlH2El = this.element.querySelector('h2');
-        if (listUlH2El != null) {
-            listUlH2El.textContent = this.type.toUpperCase() + ' PROJECTS';
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
+        this.element.querySelector('ul').id = listId;
+        this.element.querySelector('h2').textContent =
+            this.type.toUpperCase() + ' PROJECTS';
     }
     attach() {
         this.hostElement.insertAdjacentElement('beforeend', this.element);
     }
 }
-// Project input class
+// ProjectInput Class
 class ProjectInput {
     constructor() {
-        const templateEl = document.getElementById('project-input');
-        const hostElement = document.getElementById('app');
-        if (templateEl != null) {
-            this.templateElement = templateEl;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
-        if (hostElement !== null) {
-            this.hostElement = hostElement;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
-        const importNode = document.importNode(this.templateElement.content, true);
-        this.element = importNode.firstElementChild;
+        this.templateElement = document.getElementById('project-input');
+        this.hostElement = document.getElementById('app');
+        const importedNode = document.importNode(this.templateElement.content, true);
+        this.element = importedNode.firstElementChild;
         this.element.id = 'user-input';
-        const titleInputEl = this.element.querySelector('#title');
-        const descriptionInputEl = this.element.querySelector('#description');
-        const peopleInputEl = this.element.querySelector('#people');
-        if (titleInputEl !== null) {
-            this.titleInputElement = titleInputEl;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
-        if (descriptionInputEl !== null) {
-            this.descriptionInputElement = descriptionInputEl;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
-        if (peopleInputEl !== null) {
-            this.peopleInputElement = peopleInputEl;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
+        this.titleInputElement = this.element.querySelector('#title');
+        this.descriptionInputElement = this.element.querySelector('#description');
+        this.peopleInputElement = this.element.querySelector('#people');
         this.configure();
         this.attach();
     }
@@ -188,7 +135,7 @@ class ProjectInput {
             minLength: 5
         };
         const peopleValidatable = {
-            value: enteredPeople,
+            value: +enteredPeople,
             required: true,
             min: 1,
             max: 5
@@ -196,8 +143,7 @@ class ProjectInput {
         if (!validate(titleValidatable) ||
             !validate(descriptionValidatable) ||
             !validate(peopleValidatable)) {
-            alert('Invalid input, please try again');
-            throw new Error('Invalid input');
+            alert('Invalid input, please try again!');
         }
         else {
             return [enteredTitle, enteredDescription, +enteredPeople];
@@ -213,9 +159,7 @@ class ProjectInput {
         const userInput = this.gatherUserInput();
         if (Array.isArray(userInput)) {
             const [title, desc, people] = userInput;
-            if (projectState !== null) {
-                projectState.addProject(title, desc, people);
-            }
+            projectState.addProject(title, desc, people);
             this.clearInputs();
         }
     }
@@ -227,7 +171,7 @@ class ProjectInput {
     }
 }
 __decorate([
-    Autobind
+    autobind
 ], ProjectInput.prototype, "submitHandler", null);
 const prjInput = new ProjectInput();
 const activePrjList = new ProjectList('active');
