@@ -47,6 +47,55 @@ function Autobind (_: any, _2: string, descriptor: PropertyDescriptor): Property
   return adjDescriptor
 }
 
+// Project list class
+class ProjectList {
+  templateElement: HTMLTemplateElement
+  hostElement: HTMLDivElement
+  element: HTMLElement
+
+  constructor (private readonly type: 'active' | 'finished') {
+    const templateEl = document.getElementById('project-list')
+    const hostElement = document.getElementById('app')
+    if (templateEl != null) {
+      this.templateElement = templateEl as HTMLTemplateElement
+    } else {
+      throw new Error('There is no element with this identifier')
+    }
+    if (hostElement != null) {
+      this.hostElement = hostElement as HTMLDivElement
+    } else {
+      throw new Error('There is no element with this identifier')
+    }
+
+    const importNode = document.importNode(this.templateElement.content, true)
+    this.element = importNode.firstElementChild as HTMLElement
+    this.element.id = `${this.type}-projects`
+
+    this.attach()
+    this.renderContent()
+  }
+
+  private renderContent (): void {
+    const listId = `${this.type}-projects-list`
+    const listUlEl = this.element.querySelector('ul')
+    if (listUlEl != null) {
+      listUlEl.id = listId
+    } else {
+      throw new Error('There is no element with this identifier')
+    }
+    const listUlH2El = this.element.querySelector('h2')
+    if (listUlH2El != null) {
+      listUlH2El.textContent = this.type.toUpperCase() + ' PROJECTS'
+    } else {
+      throw new Error('There is no element with this identifier')
+    }
+  }
+
+  private attach (): void {
+    this.hostElement.insertAdjacentElement('beforeend', this.element)
+  }
+}
+
 // Project input class
 class ProjectInput {
   templateElement: HTMLTemplateElement
@@ -155,3 +204,5 @@ class ProjectInput {
 }
 
 const prjInput = new ProjectInput()
+const activePrjList = new ProjectList('active')
+const finishedPrjList = new ProjectList('finished')

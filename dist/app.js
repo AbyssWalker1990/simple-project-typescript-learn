@@ -7,7 +7,6 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 };
 function validate(validatableInput) {
     let isValid = true;
-    console.log(typeof validatableInput.value);
     if (validatableInput.required !== null) {
         isValid = isValid && validatableInput.value.toString().trim().length !== 0;
     }
@@ -41,6 +40,51 @@ function Autobind(_, _2, descriptor) {
         }
     };
     return adjDescriptor;
+}
+// Project list class
+class ProjectList {
+    constructor(type) {
+        this.type = type;
+        const templateEl = document.getElementById('project-list');
+        const hostElement = document.getElementById('app');
+        if (templateEl != null) {
+            this.templateElement = templateEl;
+        }
+        else {
+            throw new Error('There is no element with this identifier');
+        }
+        if (hostElement != null) {
+            this.hostElement = hostElement;
+        }
+        else {
+            throw new Error('There is no element with this identifier');
+        }
+        const importNode = document.importNode(this.templateElement.content, true);
+        this.element = importNode.firstElementChild;
+        this.element.id = `${this.type}-projects`;
+        this.attach();
+        this.renderContent();
+    }
+    renderContent() {
+        const listId = `${this.type}-projects-list`;
+        const listUlEl = this.element.querySelector('ul');
+        if (listUlEl != null) {
+            listUlEl.id = listId;
+        }
+        else {
+            throw new Error('There is no element with this identifier');
+        }
+        const listUlH2El = this.element.querySelector('h2');
+        if (listUlH2El != null) {
+            listUlH2El.textContent = this.type.toUpperCase() + ' PROJECTS';
+        }
+        else {
+            throw new Error('There is no element with this identifier');
+        }
+    }
+    attach() {
+        this.hostElement.insertAdjacentElement('beforeend', this.element);
+    }
 }
 // Project input class
 class ProjectInput {
@@ -140,3 +184,5 @@ __decorate([
     Autobind
 ], ProjectInput.prototype, "submitHandler", null);
 const prjInput = new ProjectInput();
+const activePrjList = new ProjectList('active');
+const finishedPrjList = new ProjectList('finished');
