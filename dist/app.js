@@ -20,9 +20,17 @@ class Project {
         this.status = status;
     }
 }
-class ProjectState {
+class State {
     constructor() {
         this.listeners = [];
+    }
+    addListener(listenerFn) {
+        this.listeners.push(listenerFn);
+    }
+}
+class ProjectState extends State {
+    constructor() {
+        super();
         this.projects = [];
     }
     static getInstance() {
@@ -31,9 +39,6 @@ class ProjectState {
         }
         this.instance = new ProjectState();
         return this.instance;
-    }
-    addListener(listenerFn) {
-        this.listeners.push(listenerFn);
     }
     addProject(title, description, numOfPeople) {
         const newProject = new Project(Math.random().toString(), title, description, numOfPeople, ProjectStatus.Active);
@@ -81,12 +86,11 @@ function Autobind(_, _2, descriptor) {
     };
     return adjDescriptor;
 }
-// Project list class
-class ProjectList {
-    constructor(type) {
-        this.type = type;
-        const templateEl = document.getElementById('project-list');
-        const hostElement = document.getElementById('app');
+// Component Base class
+class Component {
+    constructor(templateId, hostElementId, insertAtStart, newElementId) {
+        const templateEl = document.getElementById(templateId);
+        const hostElement = document.getElementById(hostElementId);
         if (templateEl != null) {
             this.templateElement = templateEl;
         }
@@ -99,10 +103,27 @@ class ProjectList {
         else {
             throw new Error('There is no element with this identifier');
         }
-        this.assignedProjects = [];
         const importNode = document.importNode(this.templateElement.content, true);
         this.element = importNode.firstElementChild;
-        this.element.id = `${this.type}-projects`;
+        if (newElementId != null) {
+            this.element.id = newElementId;
+        }
+        this.attach(insertAtStart);
+    }
+    attach(insertAtBeginning) {
+        this.hostElement.insertAdjacentElement(insertAtBeginning ? 'afterbegin' : 'beforeend', this.element);
+    }
+}
+// Project list class
+class ProjectList extends Component {
+    constructor(type) {
+        super('project-list', 'app', false, `${type}-projects`);
+        this.type = type;
+        this.assignedProjects = [];
+        this.configure();
+        this.renderContent();
+    }
+    configure() {
         projectState.addListener((projects) => {
             const relevantProjects = projects.filter(prj => {
                 if (this.type === 'active') {
@@ -113,17 +134,6 @@ class ProjectList {
             this.assignedProjects = relevantProjects;
             this.renderProjects();
         });
-        this.attach();
-        this.renderContent();
-    }
-    renderProjects() {
-        const listEl = document.getElementById(`${this.type}-projects-list`);
-        listEl.innerHTML = '';
-        for (const prjItem of this.assignedProjects) {
-            const listItem = document.createElement('li');
-            listItem.textContent = prjItem.title;
-            listEl.appendChild(listItem);
-        }
     }
     renderContent() {
         const listId = `${this.type}-projects-list`;
@@ -142,30 +152,20 @@ class ProjectList {
             throw new Error('There is no element with this identifier');
         }
     }
-    attach() {
-        this.hostElement.insertAdjacentElement('beforeend', this.element);
+    renderProjects() {
+        const listEl = document.getElementById(`${this.type}-projects-list`);
+        listEl.innerHTML = '';
+        for (const prjItem of this.assignedProjects) {
+            const listItem = document.createElement('li');
+            listItem.textContent = prjItem.title;
+            listEl.appendChild(listItem);
+        }
     }
 }
 // Project input class
-class ProjectInput {
+class ProjectInput extends Component {
     constructor() {
-        const templateEl = document.getElementById('project-input');
-        const hostElement = document.getElementById('app');
-        if (templateEl != null) {
-            this.templateElement = templateEl;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
-        if (hostElement !== null) {
-            this.hostElement = hostElement;
-        }
-        else {
-            throw new Error('There is no element with this identifier');
-        }
-        const importNode = document.importNode(this.templateElement.content, true);
-        this.element = importNode.firstElementChild;
-        this.element.id = 'user-input';
+        super('project-input', 'app', true, 'user-input');
         const titleInputEl = this.element.querySelector('#title');
         const descriptionInputEl = this.element.querySelector('#description');
         const peopleInputEl = this.element.querySelector('#people');
@@ -188,8 +188,11 @@ class ProjectInput {
             throw new Error('There is no element with this identifier');
         }
         this.configure();
-        this.attach();
     }
+    configure() {
+        this.element.addEventListener('submit', this.submitHandler);
+    }
+    renderContent() { }
     gatherUserInput() {
         const enteredTitle = this.titleInputElement.value;
         const enteredDescription = this.descriptionInputElement.value;
@@ -234,12 +237,6 @@ class ProjectInput {
             }
             this.clearInputs();
         }
-    }
-    configure() {
-        this.element.addEventListener('submit', this.submitHandler);
-    }
-    attach() {
-        this.hostElement.insertAdjacentElement('afterbegin', this.element);
     }
 }
 __decorate([

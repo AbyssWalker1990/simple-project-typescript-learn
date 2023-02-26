@@ -15,14 +15,23 @@ class Project {
 }
 
 // Project State Management
-type Listener = (itens: Project[]) => void
+type Listener<T> = (items: T[]) => void
 
-class ProjectState {
-  private readonly listeners: Listener[] = []
+class State<T> {
+  protected listeners: Array<Listener<T>> = []
+
+  addListener (listenerFn: Listener<T>): void {
+    this.listeners.push(listenerFn)
+  }
+}
+
+class ProjectState extends State<Project> {
   private readonly projects: Project[] = []
   private static instance: ProjectState
 
-  private constructor () {}
+  private constructor () {
+    super()
+  }
 
   static getInstance (): any {
     if (this.instance != null) {
@@ -30,10 +39,6 @@ class ProjectState {
     }
     this.instance = new ProjectState()
     return this.instance
-  }
-
-  addListener (listenerFn: Listener): void {
-    this.listeners.push(listenerFn)
   }
 
   addProject (title: string, description: string, numOfPeople: number): void {
@@ -103,31 +108,62 @@ function Autobind (_: any, _2: string, descriptor: PropertyDescriptor): Property
   return adjDescriptor
 }
 
-// Project list class
-class ProjectList {
+// Component Base class
+abstract class Component<T extends HTMLElement, U extends HTMLElement> {
   templateElement: HTMLTemplateElement
-  hostElement: HTMLDivElement
-  element: HTMLElement
-  assignedProjects: Project[]
+  hostElement: T
+  element: U
 
-  constructor (private readonly type: 'active' | 'finished') {
-    const templateEl = document.getElementById('project-list')
-    const hostElement = document.getElementById('app')
+  constructor (
+    templateId: string,
+    hostElementId: string,
+    insertAtStart: boolean,
+    newElementId?: string
+  ) {
+    const templateEl = document.getElementById(templateId)
+    const hostElement = document.getElementById(hostElementId)
     if (templateEl != null) {
       this.templateElement = templateEl as HTMLTemplateElement
     } else {
       throw new Error('There is no element with this identifier')
     }
     if (hostElement != null) {
-      this.hostElement = hostElement as HTMLDivElement
+      this.hostElement = hostElement as T
     } else {
       throw new Error('There is no element with this identifier')
     }
-    this.assignedProjects = []
-    const importNode = document.importNode(this.templateElement.content, true)
-    this.element = importNode.firstElementChild as HTMLElement
-    this.element.id = `${this.type}-projects`
 
+    const importNode = document.importNode(this.templateElement.content, true)
+    this.element = importNode.firstElementChild as U
+    if (newElementId != null) {
+      this.element.id = newElementId
+    }
+
+    this.attach(insertAtStart)
+  }
+
+  private attach (insertAtBeginning: boolean): void {
+    this.hostElement.insertAdjacentElement(
+      insertAtBeginning ? 'afterbegin' : 'beforeend', this.element
+    )
+  }
+
+  abstract configure (): void
+  abstract renderContent (): void
+}
+
+// Project list class
+class ProjectList extends Component<HTMLDivElement, HTMLElement> {
+  assignedProjects: Project[]
+
+  constructor (private readonly type: 'active' | 'finished') {
+    super('project-list', 'app', false, `${type}-projects`)
+    this.assignedProjects = []
+    this.configure()
+    this.renderContent()
+  }
+
+  configure (): void {
     projectState.addListener((projects: Project[]) => {
       const relevantProjects = projects.filter(prj => {
         if (this.type === 'active') {
@@ -138,22 +174,9 @@ class ProjectList {
       this.assignedProjects = relevantProjects
       this.renderProjects()
     })
-
-    this.attach()
-    this.renderContent()
   }
 
-  private renderProjects (): void {
-    const listEl = document.getElementById(`${this.type}-projects-list`) as HTMLUListElement
-    listEl.innerHTML = ''
-    for (const prjItem of this.assignedProjects) {
-      const listItem = document.createElement('li')
-      listItem.textContent = prjItem.title
-      listEl.appendChild(listItem)
-    }
-  }
-
-  private renderContent (): void {
+  renderContent (): void {
     const listId = `${this.type}-projects-list`
     const listUlEl = this.element.querySelector('ul')
     if (listUlEl != null) {
@@ -169,37 +192,25 @@ class ProjectList {
     }
   }
 
-  private attach (): void {
-    this.hostElement.insertAdjacentElement('beforeend', this.element)
+  private renderProjects (): void {
+    const listEl = document.getElementById(`${this.type}-projects-list`) as HTMLUListElement
+    listEl.innerHTML = ''
+    for (const prjItem of this.assignedProjects) {
+      const listItem = document.createElement('li')
+      listItem.textContent = prjItem.title
+      listEl.appendChild(listItem)
+    }
   }
 }
 
 // Project input class
-class ProjectInput {
-  templateElement: HTMLTemplateElement
-  hostElement: HTMLDivElement
-  element: HTMLFormElement
+class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
   titleInputElement: HTMLInputElement
   descriptionInputElement: HTMLInputElement
   peopleInputElement: HTMLInputElement
 
   constructor () {
-    const templateEl = document.getElementById('project-input')
-    const hostElement = document.getElementById('app')
-    if (templateEl != null) {
-      this.templateElement = templateEl as HTMLTemplateElement
-    } else {
-      throw new Error('There is no element with this identifier')
-    }
-    if (hostElement !== null) {
-      this.hostElement = hostElement as HTMLDivElement
-    } else {
-      throw new Error('There is no element with this identifier')
-    }
-    const importNode = document.importNode(this.templateElement.content, true)
-    this.element = importNode.firstElementChild as HTMLFormElement
-    this.element.id = 'user-input'
-
+    super('project-input', 'app', true, 'user-input')
     const titleInputEl = this.element.querySelector('#title')
     const descriptionInputEl = this.element.querySelector('#description')
     const peopleInputEl = this.element.querySelector('#people')
@@ -218,9 +229,15 @@ class ProjectInput {
     } else {
       throw new Error('There is no element with this identifier')
     }
+
     this.configure()
-    this.attach()
   }
+
+  configure (): void {
+    this.element.addEventListener('submit', this.submitHandler)
+  }
+
+  renderContent (): void {}
 
   private gatherUserInput (): [string, string, number] {
     const enteredTitle = this.titleInputElement.value
@@ -272,14 +289,6 @@ class ProjectInput {
       }
       this.clearInputs()
     }
-  }
-
-  private configure (): void {
-    this.element.addEventListener('submit', this.submitHandler)
-  }
-
-  private attach (): void {
-    this.hostElement.insertAdjacentElement('afterbegin', this.element)
   }
 }
 
