@@ -128,9 +128,19 @@ class ProjectItem extends Component {
     constructor(hostId, project) {
         super('single-project', hostId, false, project.id);
         this.project = project;
+        this.configure();
         this.renderContent();
     }
-    configure() { }
+    dragStartHandler(event) {
+        console.log(event);
+    }
+    dragEndHandler(_) {
+        console.log('DragEnd');
+    }
+    configure() {
+        this.element.addEventListener('dragstart', this.dragStartHandler);
+        this.element.addEventListener('dragend', this.dragEndHandler);
+    }
     renderContent() {
         const h2El = this.element.querySelector('h2');
         const h3El = this.element.querySelector('h3');
@@ -146,6 +156,9 @@ class ProjectItem extends Component {
         }
     }
 }
+__decorate([
+    Autobind
+], ProjectItem.prototype, "dragStartHandler", null);
 // Project list class
 class ProjectList extends Component {
     constructor(type) {
