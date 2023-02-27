@@ -116,6 +116,15 @@ class Component {
 }
 // Project Item Class
 class ProjectItem extends Component {
+    get persons() {
+        const strPeople = this.project.people.toString();
+        if (this.project.people === 1) {
+            return '1 person';
+        }
+        else {
+            return `${strPeople} persons`;
+        }
+    }
     constructor(hostId, project) {
         super('single-project', hostId, false, project.id);
         this.project = project;
@@ -133,7 +142,7 @@ class ProjectItem extends Component {
             h3El.textContent = this.project.description.toString();
         }
         if (pEl !== null) {
-            pEl.textContent = this.project.people.toString();
+            pEl.textContent = this.persons + ' assigned.';
         }
     }
 }

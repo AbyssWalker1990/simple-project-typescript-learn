@@ -1,3 +1,4 @@
+
 // Project type
 enum ProjectStatus {
   Active,
@@ -156,6 +157,15 @@ abstract class Component<T extends HTMLElement, U extends HTMLElement> {
 class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
   private readonly project: Project
 
+  get persons (): string {
+    const strPeople = this.project.people.toString() as string
+    if (this.project.people === 1) {
+      return '1 person'
+    } else {
+      return `${strPeople} persons`
+    }
+  }
+
   constructor (hostId: string, project: Project) {
     super('single-project', hostId, false, project.id)
     this.project = project
@@ -176,7 +186,7 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> {
       h3El.textContent = this.project.description.toString()
     }
     if (pEl !== null) {
-      pEl.textContent = this.project.people.toString()
+      pEl.textContent = this.persons + ' assigned.'
     }
   }
 }
