@@ -1,31 +1,8 @@
-// Drag And Drop Interfaces
-interface Draggable {
-  dragStartHandler: (event: DragEvent) => void
-  dragEndHandler: (event: DragEvent) => void
-}
+/* eslint-disable @typescript-eslint/no-namespace */
+/// <reference path="drag-drop-interfaces.ts" />
+/// <reference path="project-model.ts" />
 
-interface DragTarget {
-  dragOverHandler: (event: DragEvent) => void
-  dropHandler: (event: DragEvent) => void
-  dragLeaveHandler: (event: DragEvent) => void
-}
-
-// Project type
-enum ProjectStatus {
-  Active,
-  Finished
-}
-
-class Project {
-  constructor (
-    public id: string,
-    public title: string,
-    public description: string,
-    public people: number,
-    public status: ProjectStatus
-  ) {}
-}
-
+namespace App {
 // Project State Management
 type Listener<T> = (items: T[]) => void
 
@@ -181,7 +158,7 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements 
   private readonly project: Project
 
   get persons (): string {
-    const strPeople = this.project.people.toString() as string
+    const strPeople = this.project.people.toString()
     if (this.project.people === 1) {
       return '1 person'
     } else {
@@ -399,6 +376,8 @@ class ProjectInput extends Component<HTMLDivElement, HTMLFormElement> {
   }
 }
 
-const prjInput = new ProjectInput()
-const activePrjList = new ProjectList('active')
-const finishedPrjList = new ProjectList('finished')
+new ProjectInput()
+new ProjectList('active')
+new ProjectList('finished')
+
+}
