@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-namespace */
-namespace App {
-// Project State Management
+import { Project, ProjectStatus } from '../models/project-model.js'
+
 type Listener<T> = (items: T[]) => void
 
 class State<T> {
@@ -56,4 +55,3 @@ export class ProjectState extends State<Project> {
 
 // Creating global constant for state
 export const projectState = ProjectState.getInstance()
-}
