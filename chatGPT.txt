@@ -1,0 +1,107 @@
+I have this error  - Cannot GET / when trying to start webpack-dev-server. What can be wrong?
+The "Cannot GET /" error typically occurs when the webpack-dev-server cannot find the file or directory it is trying to serve. This can happen for a few different reasons, including:
+
+The path to the file or directory is incorrect: Double-check the path to the file or directory you are trying to serve. Make sure it is spelled correctly and that it exists in the location you specified.
+
+The webpack-dev-server configuration is incorrect: Check your webpack-dev-server configuration to make sure that you have set up the correct paths and options. Make sure that the "contentBase" option is set to the correct directory where your files are located.
+
+There is an issue with your code: If your code has syntax errors or other issues, this can prevent webpack-dev-server from properly serving your files. Check your code for any errors and make sure it is properly structured and formatted.
+
+There is a conflict with other services running on the same port: If another service is already running on the same port as webpack-dev-server, it will not be able to start. Try changing the port number in your configuration to a different value.
+
+There is an issue with your network configuration: If your network configuration is incorrect, this can prevent webpack-dev-server from properly serving your files. Make sure that your network settings are configured correctly and that you have internet connectivity.
+
+If you have tried all of these steps and are still experiencing issues, try searching for solutions specific to your development environment, as there may be other factors at play.
+
+
+
+
+Владимир Бордиян
+How to propely set "contentBase"?
+The contentBase option in webpack-dev-server specifies the base directory to serve the content from. Here's how to set it properly:
+
+If you have a single entry point in your webpack configuration, you can set contentBase to the directory containing your HTML file.
+For example, if your index.html file is in the public directory and your webpack configuration is in the root directory, you can set contentBase like this:
+
+javascript
+Copy code
+devServer: {
+  contentBase: path.join(__dirname, 'public')
+}
+If you have multiple entry points in your webpack configuration, you can use an array to specify multiple directories:
+javascript
+Copy code
+devServer: {
+  contentBase: [path.join(__dirname, 'public'), path.join(__dirname, 'assets')]
+}
+In this example, both the public and assets directories will be served.
+
+If you want to serve files from the root directory, set contentBase to __dirname:
+javascript
+Copy code
+devServer: {
+  contentBase: __dirname
+}
+Note that __dirname is a Node.js variable that refers to the current directory.
+
+Keep in mind that contentBase is relative to the webpack configuration file, not the directory from which you run webpack-dev-server. If your HTML file is not in the same directory as your webpack configuration, you'll need to use an absolute path or a path relative to the configuration file.
+
+Also, make sure that your index.html file is properly linked to your JavaScript or CSS files. You may need to adjust your <script> and <link> tags to point to the correct paths.
+
+
+
+
+Владимир Бордиян
+Show me simple webpack configuration file for start server with index.html in root directory
+Sure! Here's a simple webpack.config.js file that sets up webpack-dev-server to serve an index.html file in the root directory:
+
+javascript
+Copy code
+const path = require('path');
+
+module.exports = {
+  mode: 'development',
+  entry: './src/index.js',
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  devServer: {
+    contentBase: path.resolve(__dirname, ''),
+    port: 8080,
+  },
+};
+This configuration assumes that your entry point is in ./src/index.js, your output file is dist/main.js, and your index.html file is in the root directory.
+
+To start the dev server, you can run npx webpack serve. This will start the server and open your index.html file in a browser window. If you have multiple entry points, you'll need to adjust the contentBase option to serve the correct directory.
+
+
+
+
+Владимир Бордиян
+Now i have this error  - options has an unknown property 'contentBase', how to fix?
+If you're seeing the error message options has an unknown property 'contentBase', it's likely that you're using an older version of webpack-dev-server that doesn't support the contentBase option.
+
+In newer versions of webpack-dev-server, the contentBase option has been replaced with the static option. Here's an updated configuration that uses static:
+
+javascript
+Copy code
+const path = require('path');
+
+module.exports = {
+  mode: 'development',
+  entry: './src/index.js',
+  output: {
+    filename: 'main.js',
+    path: path.resolve(__dirname, 'dist'),
+  },
+  devServer: {
+    static: {
+      directory: path.resolve(__dirname, ''),
+    },
+    port: 8080,
+  },
+};
+In this configuration, static replaces contentBase, and the directory property is used to specify the directory to serve files from.
+
+Note that you'll need to be using webpack-dev-server version 4 or higher to use the static option. If you're using an older version, you can either upgrade to a newer version or continue using contentBase (but note that it will be removed in future versions of webpack-dev-server).
