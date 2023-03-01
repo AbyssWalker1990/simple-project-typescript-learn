@@ -7,12 +7,13 @@
     "lite": "lite-server",
     "start": "webpack serve --allowed-hosts all",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack"
+    "build": "webpack --config webpack.config.prod.js"
   },
   "author": "Volodymyr Bordiian",
   "license": "ISC",
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.53.0",
+    "clean-webpack-plugin": "^4.0.0",
     "eslint": "^8.34.0",
     "eslint-config-standard-with-typescript": "^34.0.0",
     "eslint-plugin-import": "^2.27.5",
