@@ -7,7 +7,7 @@
     "lite": "lite-server",
     "start": "webpack serve --allowed-hosts all",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --config webpack.config.prod.js"
+    "build": "webpack"
   },
   "author": "Volodymyr Bordiian",
   "license": "ISC",
@@ -25,5 +25,9 @@
     "webpack": "^5.75.0",
     "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^4.11.1"
+  },
+  "dependencies": {
+    "@types/lodash": "^4.14.191",
+    "lodash": "^4.17.21"
   }
 }
